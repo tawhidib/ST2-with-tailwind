@@ -1,0 +1,329 @@
+<style>
+  #hero--{{ section.id }} .hero__content {
+    background: #fff;
+  }
+  @media (min-width: 768px) {
+    #hero--{{ section.id }} .hero__content {
+      background: rgba(255, 255, 255, {{ section.settings.content_background_opacity | divided_by: 100.0 }});
+      max-width: {{ section.settings.content_max_width }}px;
+    }
+  }
+  {%- if section.settings.content_theme == "dark" -%}
+    #hero--{{ section.id }} .hero__content {
+      color: #fff;
+      background: #000;
+    }
+    @media (min-width: 768px) {
+      #hero--{{ section.id }} .hero__content {
+        background: rgba(0, 0, 0, {{ section.settings.content_background_opacity | divided_by: 100.0 }});
+      }
+    }
+  {%- endif -%}
+</style>
+
+<div
+  id="hero--{{ section.id }}"
+  class="relative flex flex-col md:flex hero hero--{{ section.settings.content_theme }} {{ section.settings.height }}"
+  aria-label="{{ section.settings.accessibility_label }}"
+>
+  <div class="relative flex flex-1 w-full overflow-hidden animate--zoom-in">
+    {%- if section.settings.image != blank -%}
+      {{
+        section.settings.image
+        | image_url: width: 3840
+        | image_tag:
+          width: section.settings.image.width,
+          class: 'object-cover w-full h-full',
+          sizes: '100vw',
+          widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840',
+          fetchpriority: 'auto'
+      }}
+    {%- else -%}
+      {{ 'hero-apparel-1' | placeholder_svg_tag: 'object-cover w-full h-full' }}
+    {%- endif -%}
+  </div>
+
+  <div class="flex-0 md:flex md:h-full md:w-full md:absolute md:inset-0 {{ section.settings.desktop_content_position }} {{ section.settings.content_alignment }}">
+    <div class="p-8 space-y-4 hero__content md:max-w-lg md:m-6 md:sticky{% if section.settings.desktop_content_position contains 'items-end' %} md:bottom-6{% else %} md:top-6{% endif %}">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'heading' -%}
+            <h2 class="m-0 {{ block.settings.heading_size }}" {{ block.shopify_attributes }}>
+              {{- block.settings.heading -}}
+            </h2>
+          {%- when 'text' -%}
+            <div class="{{ block.settings.text_style }}" {{ block.shopify_attributes }}>
+              <p class="m-0">{{ block.settings.text }}</p>
+            </div>
+          {%- when 'button' -%}
+            <div {{ block.shopify_attributes }}>
+              {%- if block.settings.button_label != blank -%}
+                <a
+                  {% if block.settings.button_link == blank %}
+                    role="link" aria-disabled="true"
+                  {% else %}
+                    href="{{ block.settings.button_link }}"
+                  {% endif %}
+                  class="btn"
+                >
+                  {{- block.settings.button_label | escape -}}
+                </a>
+              {%- endif -%}
+            </div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Hero banner",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Hero height",
+      "info": "For best results, use an image with a 3:2 aspect ratio. [Learn more](https://help.shopify.com/manual/shopify-admin/productivity-tools/image-editor#understanding-image-aspect-ratio)",
+      "default": "adapt",
+      "options": [
+        {
+          "label": "Small",
+          "value": "h-[450px] md:h-[600px]"
+        },
+        {
+          "label": "Medium",
+          "value": "h-[600px] md:h-[750px]"
+        },
+        {
+          "label": "Browser height",
+          "value": "h-dvh"
+        },
+        {
+          "label": "Adapt to image",
+          "value": "adapt"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "desktop_content_position",
+      "label": "Desktop content position",
+      "default": "md:justify-start md:items-start",
+      "options": [
+        {
+          "label": "Top left",
+          "value": "md:justify-start md:items-start"
+        },
+        {
+          "label": "Top center",
+          "value": "md:justify-center md:items-start"
+        },
+        {
+          "label": "Top right",
+          "value": "md:justify-end md:items-start"
+        },
+        {
+          "label": "Middle left",
+          "value": "md:justify-start md:items-center"
+        },
+        {
+          "label": "Middle center",
+          "value": "md:justify-center md:items-center"
+        },
+        {
+          "label": "Middle right",
+          "value": "md:justify-end md:items-center"
+        },
+        {
+          "label": "Bottom left",
+          "value": "md:justify-start md:items-end"
+        },
+        {
+          "label": "Bottom center",
+          "value": "md:justify-center md:items-end"
+        },
+        {
+          "label": "Bottom right",
+          "value": "md:justify-end md:items-end"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Content alignment",
+      "default": "text-left",
+      "options": [
+        {
+          "label": "Left",
+          "value": "text-left"
+        },
+        {
+          "label": "Center",
+          "value": "text-center"
+        },
+        {
+          "label": "Right",
+          "value": "text-right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_theme",
+      "label": "Theme",
+      "default": "light",
+      "options": [
+        {
+          "label": "Dark",
+          "value": "dark"
+        },
+        {
+          "label": "Light",
+          "value": "light"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_background_opacity",
+      "label": "Background Opacity",
+      "min": 0,
+      "max": 100,
+      "step": 10,
+      "unit": "%",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "content_max_width",
+      "label": "Content max width",
+      "info": "If the content is smaller than the max width, this has no effect.",
+      "default": 520,
+      "max": 900,
+      "min": 300,
+      "step": 10,
+      "unit": "px"
+    },
+    {
+      "type": "text",
+      "id": "accessibility_label",
+      "label": "Accessibility info",
+      "info": "This text will be read by screen readers to describe the hero banner to visually impaired users."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "Heading",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Hero Banner"
+        },
+        {
+          "type": "select",
+          "id": "heading_size",
+          "label": "Heading size",
+          "default": "text-xl",
+          "options": [
+            {
+              "value": "text-xl",
+              "label": "Small"
+            },
+            {
+              "value": "text-3xl",
+              "label": "Medium"
+            },
+            {
+              "value": "text-5xl",
+              "label": "Large"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "Description",
+          "default": "Provide a catchy description to capture customers attention."
+        },
+        {
+          "type": "select",
+          "id": "text_style",
+          "label": "Text style",
+          "default": "text-base",
+          "options": [
+            {
+              "value": "text-base",
+              "label": "Body"
+            },
+            {
+              "value": "text-lg",
+              "label": "Subtitle"
+            },
+            {
+              "value": "text-sm",
+              "label": "Caption"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "Button",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_label",
+          "default": "Learn more",
+          "label": "Button label",
+          "info": "Leave the label blank to hide the button."
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero banner",
+      "blocks": [
+        {
+          "type": "heading"
+        },
+        {
+          "type": "text"
+        },
+        {
+          "type": "button"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
